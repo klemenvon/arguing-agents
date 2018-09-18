@@ -16,9 +16,13 @@ class t_lPair():
 		# text first
 		base_path = path_to_corpus + "nodeset" + str(self.ID)
 		text_path = base_path + ".txt"
-		with open(text_path,'r') as f:
-			self.plain = f.read()
-		# json file next, this one's a little more complex
-		json_path = base_path + ".json"
-		with open(json_path,'r') as f:
-			self.labeled = json.load(f)
+		self.plain = ""
+		self.labeled = ""
+		if os.path.isfile(text_path):
+			with open(text_path,'r') as f:
+				self.plain = f.read()
+			# json file next, this one's a little more complex
+			json_path = base_path + ".json"
+			with open(json_path,'r') as f:
+				self.labeled = json.load(f)
+		
