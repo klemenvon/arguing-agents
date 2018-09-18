@@ -7,10 +7,13 @@
 
 from Parsers import araucaria
 
+temp = []
 data = []
 
-for x in range(7,217):
-	data.append(araucaria.t_lPair(x))
+for x in range(0,668):
+	temp = araucaria.t_lPair(x)
+	if temp.plain:
+		data.append(temp)
 
 print(len(data))
 print(data[0].plain)
