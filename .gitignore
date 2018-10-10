@@ -3,3 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.py~
+
+# Ignore the complete unzipped corpus
+**/complete
+
+# Ignore some mac specific stuff
+.DS_Store
+
+# Ignore vim swap files
+*.swp
