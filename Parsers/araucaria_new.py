@@ -136,9 +136,10 @@ class ConstDataSet(object):
 #                    tag_list.append(word)
     def extractFeatures(self):
         sentence_rows = self.training_datafr['Input']
-        n_gram_range = CountVectorizer(ngram_range=(1,3), max_features=10000)
+        n_gram_range = CountVectorizer(ngram_range=(1,3), max_features=1000)
         uni_bi_tri_vector = n_gram_range.fit_transform(sentence_rows).toarray()
         X_train_tfidf = TfidfTransformer().fit_transform(uni_bi_tri_vector).toarray()
+        print("size of vector ",X_train_tfidf[0].size)
         for index, row in self.training_datafr.iterrows():
             sen_tok = nltk.word_tokenize(row['Input'])
             sen_tags = nltk.pos_tag(sen_tok, tagset='universal')
@@ -160,13 +161,13 @@ class ConstDataSet(object):
                 
     def buildSvm(self):
         svm_model = svm.SVC(gamma='scale')
-        #X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split( self.tagDataSet['Input'], self.tagDataSet['Output'], test_size=0.33, random_state=42)
+#        X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split( self.tagDataSet['Input'], self.tagDataSet['Output'], test_size=0.33, random_state=42)
 #        print("started reducing the dimensions")
 #        transformer = SparsePCA(n_components=100,normalize_components=True,random_state=0)
 #        input_train_transform =  transformer.fit_transform(self.input_train)
 #        print("Reduced dimensions ",input_train_transform.shape)
+        #X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(self.input_train, self.input_test, test_size=0.33, random_state=42)
         X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(self.input_train, self.input_test, test_size=0.33, random_state=42)
-        #X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(input_train_transform, self.input_test, test_size=0.33, random_state=42)
         print("Building SVM for Dataset of length ",len(X_train))
         print(self.input_train[1])
         #train_sparse = sparse.csr_matrix(np.asarray(self.input_train))
