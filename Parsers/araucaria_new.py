@@ -39,7 +39,6 @@ class ConstDataSet(object):
         self.dataset = self.dataset.append(json_data)
         print(self.dataset.size)
         
-    
         
     def readTxtFileAndConstructDataset(self,path_to_txt):
         non_arg_list = [];
@@ -93,7 +92,6 @@ class ConstDataSet(object):
 #                print(list(train_file.columns.values)) #file header
 #                print(train_file.tail(35))
                 #last N rows
-        
         print(self.training_datafr.head(30))
                 
     def extractVerbs(self):
@@ -121,12 +119,7 @@ class ConstDataSet(object):
             max_iter=-1, probability=False, random_state=None, shrinking=True,
             tol=0.001, verbose=False)
         svm_model.predict(X_test, y_test)
-        
-        
-        
-        
-        
-        
+         
         
     def readFile(self, type, path):
         # Get the function from switcher dictionary

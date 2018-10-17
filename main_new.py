@@ -12,7 +12,7 @@ from Parsers import araucaria_new
 #path_to_corpus = os.getcwd() + '/Corpora/araucaria/'
 
 #path_to_corpus = "/Users/sandy/Downloads/UKP Sentential Argument Mining Corpus/data/complete"
-path_to_corpus = "/Users/sandy/Downloads/"
+path_to_corpus = os.getcwd()
 arConstObj = araucaria_new.ConstDataSet()
 
 #arConstObj.readFile("0", path_to_corpus)
