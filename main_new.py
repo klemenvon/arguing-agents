@@ -11,24 +11,18 @@ from Parsers import lstm_new
 path_to_corpus = os.getcwd() + '/Corpora'
 
 #path_to_corpus = "/Users/sandy/Downloads/UKP Sentential Argument Mining Corpus/data/complete"
-
-word2vec = lstm_new.ConstWord2Vec()
-word2vec.readTsvFileAndConstructDataset(path_to_corpus)
-
-
-#path_to_corpus = "/Users/sandy/Downloads/"
-#print("before ")
-#word2VecObj = lstm_new.ConstWord2Vec()
-#print("after ")
-#print(word2VecObj)
-#word2VecObj
-#word2VecObj.readTsvFileAndConstructDataset(path_to_corpus)
-#print("final")
+#path_to_corpus = "/Users/sandy/Downloads/UKP Sentential Argument Mining Corpus/data/complete"
+##path_to_corpus = "/Users/sandy/Downloads/"
+#arConstObj = araucaria_new.ConstDataSet()
+#
 ##arConstObj.readFile("0", path_to_corpus)
 ##arConstObj.readFile("1", path_to_corpus)
 #arConstObj.readFile("2",  path_to_corpus)
 #arConstObj.extractFeatures()
 ##arConstObj.extractVerbs()
 #arConstObj.buildSvm()
-##print(len(data))
+#print(len(data))
 #print(data[0].plain)
+word2vec = lstm_new.ConstWord2Vec()
+word2vec.readTsvFileAndConstructDataset(path_to_corpus)
+#word2vec.buildlstm()
