@@ -6,13 +6,21 @@ Created on Wed Sep 19 19:29:38 2018
 
 import os, json
 from os.path import basename
+import collections
 import ntpath
+import numpy as np
 import difflib
 import pandas as pd
 import nltk
 import sklearn
 from sklearn import svm
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.decomposition import SparsePCA
+from sklearn.svm import SVC
 from nltk.tokenize import sent_tokenize
+from scipy import sparse
+from collections import Counter
 path_to_corpus = os.getcwd() + '/Corpora/araucaria/'
 
 
@@ -20,6 +28,9 @@ class ConstDataSet(object):
     def __init__(self):
         self.dataset = pd.DataFrame(columns=['Input', 'Output'])
         self.tagDataSet = pd.DataFrame(columns=['Input', 'Output'])
+        self.input_train = [];
+        self.input_test = [];
+        #self.tagDataSet = pd.DataFrame(columns=['UNI_BIGRAM_TRI', 'VB_C', 'ADV_C', 'AVG_WORD', 'SEN_LEN', 'OUTPUT'])
         self.training_datafr = pd.DataFrame(columns=['Input', 'Output'])
         self.switcher = {
                 "0": self.readJsonFileAndConstructDataset,
@@ -88,39 +99,85 @@ class ConstDataSet(object):
                         self.training_datafr.loc[datafr_index] = [each_train[4], '0']
                     else :
                         self.training_datafr.loc[datafr_index] = [each_train[4], '1']
-                    datafr_index += 1
-#                print(list(train_file.columns.values)) #file header
-#                print(train_file.tail(35))
-                #last N rows
-        print(self.training_datafr.head(30))
+                    datafr_index+=1
+        print(self.training_datafr.head(2))
+        #shuffle the data
+        self.training_datafr = self.training_datafr.sample(frac=1).reset_index(drop=True)
+        print("--------------------")
+        print(len(self.training_datafr.loc[self.training_datafr['Output'] == '1']))
+        print(len(self.training_datafr.loc[self.training_datafr['Output'] == '0']))
+        print("--------------------")
+        print(self.training_datafr.head(2))
                 
     def extractVerbs(self):
         for index, row in self.training_datafr.iterrows():
-            sen_tok = nltk.word_tokenize(row['Input'])
-            sen_tags = nltk.pos_tag(sen_tok)
-            tag_list = []
-            for word, tag in sen_tags:
-                if tag == 'VB' or tag == 'VBP' or tag == 'RB':
-                    tag_list.append(word)
             
-            self.tagDataSet.loc[index] = [tag_list, row['Output']]
-        
-        print(self.tagDataSet.head(30))
-                    
+            sen_tok = nltk.word_tokenize(row['Input'])
+            sen_tags = nltk.pos_tag(sen_tok, tagset='universal')
+            tag_counts = Counter(tag for word,tag in sen_tags)
+            total_tag_count = sum(tag_counts.values())
+            avg_tag_counts = dict((word, float(count)/total_tag_count) for word,count in tag_counts.items())
+            VB_count = avg_tag_counts.get('VERB', 0)
+            Adv_count = avg_tag_counts.get('ADV', 0)
+            punct_count = avg_tag_counts.get('.', 0)
+            words = row['Input'].split()
+            avg_word_len = sum(len(word) for word in words) / len(words)
+            sen_len = len(row['Input'])
+            #self.tagDataSet.loc[index] = [[VB_count, Adv_count, avg_word_len, punct_count, sen_len], row['Output']]
+            self.input_train.append([VB_count, Adv_count, avg_word_len, punct_count, sen_len])
+            self.input_test.append(row['Output'])
+#            tag_fd = nltk.FreqDist(tag for (word, tag) in sen_tags)
+#            
+#            tag_list = []
+#            for word, tag in sen_tags:
+#                if tag == 'VB' or tag == 'VBP' or tag == 'RB':
+#                    
+#                    tag_list.append(word)
+    def extractFeatures(self):
+        sentence_rows = self.training_datafr['Input']
+        n_gram_range = CountVectorizer(ngram_range=(1,3), max_features=1000)
+        uni_bi_tri_vector = n_gram_range.fit_transform(sentence_rows).toarray()
+        X_train_tfidf = TfidfTransformer().fit_transform(uni_bi_tri_vector).toarray()
+        print("size of vector ",X_train_tfidf[0].size)
+        for index, row in self.training_datafr.iterrows():
+            sen_tok = nltk.word_tokenize(row['Input'])
+            sen_tags = nltk.pos_tag(sen_tok, tagset='universal')
+            tag_counts = Counter(tag for word,tag in sen_tags)
+            total_tag_count = sum(tag_counts.values())
+            avg_tag_counts = dict((word, float(count)/total_tag_count) for word,count in tag_counts.items())
+            VB_count = avg_tag_counts.get('VERB', 0)
+            Adv_count = avg_tag_counts.get('ADV', 0)
+            #punct_count = avg_tag_counts.get('.', 0)
+            words = row['Input'].split()
+            avg_word_len = sum(len(word) for word in words) / len(words)
+            sen_len = len(row['Input'])
+            #self.tagDataSet.loc[index] = [[VB_count, Adv_count, avg_word_len, punct_count, sen_len], row['Output']]
+            #self.input_train.append([uni_bi_tri_vector[index].tolist(),VB_count, Adv_count, avg_word_len, sen_len])
+            #self.input_train.append([['a'],VB_count, Adv_count, avg_word_len, sen_len])
+            self.input_train.append(np.append(X_train_tfidf[index],[VB_count, Adv_count, avg_word_len, sen_len]))
+            self.input_test.append(row['Output'])
+            
                 
     def buildSvm(self):
-        print("Building SVM")
         svm_model = svm.SVC(gamma='scale')
-        X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split( self.tagDataSet['Input'], self.tagDataSet['Output'], test_size=0.33, random_state=42)
-        print(X_train)
-        print(X_test)
-        svm_model.fit(X_train, X_test)
+#        X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split( self.tagDataSet['Input'], self.tagDataSet['Output'], test_size=0.33, random_state=42)
+#        print("started reducing the dimensions")
+#        transformer = SparsePCA(n_components=100,normalize_components=True,random_state=0)
+#        input_train_transform =  transformer.fit_transform(self.input_train)
+#        print("Reduced dimensions ",input_train_transform.shape)
+        #X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(self.input_train, self.input_test, test_size=0.33, random_state=42)
+        X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(self.input_train, self.input_test, test_size=0.33, random_state=42)
+        print("Building SVM for Dataset of length ",len(X_train))
+        print(self.input_train[1])
+        #train_sparse = sparse.csr_matrix(np.asarray(self.input_train))
+        svm_model.fit(X_train, y_train)
         SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0, decision_function_shape='ovr', degree=3, gamma='scale', kernel='rbf',
             max_iter=-1, probability=False, random_state=None, shrinking=True,
             tol=0.001, verbose=False)
-        svm_model.predict(X_test, y_test)
-         
-        
+        y_predict = svm_model.predict(X_test)
+        print("Predicted Accuracies for Dataset of length ",len(X_test))
+        print("The predicted accuracy is ",sklearn.metrics.accuracy_score(y_test, y_predict, normalize=True, sample_weight=None))
+
     def readFile(self, type, path):
         # Get the function from switcher dictionary
         func = self.switcher.get(type)

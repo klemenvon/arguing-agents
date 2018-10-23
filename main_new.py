@@ -1,4 +1,4 @@
-# Start of the prject
+    # Start of the prject
 # Data is in plain text and Json format
 # Use Spacy for linguistic processing, pos tagging to add features and such
 
@@ -18,7 +18,8 @@ arConstObj = araucaria_new.ConstDataSet()
 #arConstObj.readFile("0", path_to_corpus)
 #arConstObj.readFile("1", path_to_corpus)
 arConstObj.readFile("2",  path_to_corpus)
-arConstObj.extractVerbs()
+arConstObj.extractFeatures()
+#arConstObj.extractVerbs()
 arConstObj.buildSvm()
 #print(len(data))
 #print(data[0].plain)
