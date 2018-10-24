@@ -24,5 +24,5 @@ path_to_corpus = os.getcwd() + '/Corpora'
 #print(len(data))
 #print(data[0].plain)
 word2vec = lstm_new.ConstWord2Vec()
-word2vec.readTsvFileAndConstructDataset(path_to_corpus)
-#word2vec.buildlstm()
+#word2vec.readTsvFileAndConstructDataset(path_to_corpus)
+word2vec.load_model(["People are going to do it anyway"],[['0','1']])
