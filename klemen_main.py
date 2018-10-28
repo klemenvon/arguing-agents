@@ -1,16 +1,16 @@
 # Arguing agents start again
 import pandas as pd
 import numpy as np
-import seaborn as sns # unused, consider removing
-import matplotlib.pyplot as plt # unused, consider removing
+#import seaborn as sns # unused, consider removing
+#import matplotlib.pyplot as plt # unused, consider removing
 import os,csv, time
 import spacy # has pos tagger, word vector stuff and a bunch of other tools, very fast as well
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.model_selection import train_test_split
-from tqdm import tqdm
-# a debugging import
-from pprint import pprint
 import json
+#from tqdm import tqdm
+# a debugging import
+#from pprint import pprint
 
 top_path = 'Corpora/complete/'
 path_to_data = os.getcwd() + '/' + top_path
@@ -19,7 +19,7 @@ global_timer = time.time()
 
 files = os.listdir(path_to_data)
 files = list(filter(lambda k: '.tsv' in k,files)) # keep only tsv files
-files = files[:1] # only the first file so that tests don't take hours
+#files = files[:1] # only the first file so that tests don't take hours
 
 temp_frames = []
 df = pd.DataFrame()
@@ -76,7 +76,7 @@ processed_sentences = []
 max_len = 0
 
 print("Processing sentences using spaCy")
-for s in tqdm(range(len(raw_sentences))): # len(raw_sentences) goes here normally
+for s in range(len(raw_sentences)): # len(raw_sentences) goes here normally
 	processed = nlp(raw_sentences[s])
 	processed_sentences.append(processed)
 	temp_vectors = []
@@ -174,7 +174,7 @@ print('Test accuracy: {}\nModel Score: {}'.format(acc,score))
 
 # Save model to disk
 def save_model(model):
-	model_save = 'klemen_model.json'
+	model_save = 'klemen_model_full.json'
 	print("Converting model to json")
 	model_json = model.to_json()
 	print("Saving model to {}".format(model_save))
