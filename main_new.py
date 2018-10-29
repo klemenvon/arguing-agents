@@ -8,7 +8,7 @@
 import os
 from Parsers import lstm_new
 
-path_to_corpus = os.getcwd() + '/Corpora'
+path_to_corpus = os.getcwd() + '/complete'
 
 #path_to_corpus = "/Users/sandy/Downloads/UKP Sentential Argument Mining Corpus/data/complete"
 #path_to_corpus = "/Users/sandy/Downloads/UKP Sentential Argument Mining Corpus/data/complete"
@@ -24,5 +24,5 @@ path_to_corpus = os.getcwd() + '/Corpora'
 #print(len(data))
 #print(data[0].plain)
 word2vec = lstm_new.ConstWord2Vec()
-word2vec.readTsvFileAndConstructDataset(path_to_corpus)
-#word2vec.load_model(["People are going to do it anyway"],[['0','1']])
+word2vec.readTsvFileAndConstructDatasetNew2(path_to_corpus)
+word2vec.load_model_new(["because"],[['0','1']])
