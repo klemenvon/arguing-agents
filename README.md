@@ -12,3 +12,5 @@ The script installs everything you should need to run the code.
 
 As a benchmark, `train_lstm.py` takes around 30 minutes to run on 2 physical (4 virtual) cores.
 Given more cores it will likely be faster as Keras utilizes all available processing cores to compute tensors.
+
+To run the SVM model just run the main_new.py
