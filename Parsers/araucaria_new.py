@@ -50,7 +50,6 @@ class ConstDataSet(object):
         self.dataset = self.dataset.append(json_data)
         print(self.dataset.size)
         
-    
         
     def readTxtFileAndConstructDataset(self,path_to_txt):
         non_arg_list = [];

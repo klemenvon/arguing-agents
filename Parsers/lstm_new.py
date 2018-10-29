@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Oct 17 12:46:13 2018
-
 @author: sandy
 """
 
@@ -126,7 +125,7 @@ class ConstWord2Vec(object):
             json_file.write(model_json)
         model.save_weights("model.h5")
         print("Saved model to disk")
-        
+       
         
     def readTsvFileAndConstructDatasetNew2(self, path_to_tsv):
         tsv_files = [pos_tsv for pos_tsv in os.listdir(path_to_tsv) if pos_tsv.endswith('.tsv')]

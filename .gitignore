@@ -1,5 +1,5 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 *.py~
@@ -12,3 +12,11 @@ __pycache__/
 
 # Ignore vim swap files
 *.swp
+
+# very large data files
+extracted_vectors1.json
+extracted_vectors2.json
+
+# very large model files
+klemen*
+best_model*
