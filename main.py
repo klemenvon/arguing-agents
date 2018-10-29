@@ -1,4 +1,4 @@
-# Start of the prject
+r# Start of the prject
 # Data is in plain text and Json format
 # Use Spacy for linguistic processing, pos tagging to add features and such
 
