@@ -8,7 +8,7 @@ import spacy # has pos tagger, word vector stuff and a bunch of other tools, ver
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.model_selection import train_test_split
 import json
-#from tqdm import tqdm
+from tqdm import tqdm
 # a debugging import
 #from pprint import pprint
 
@@ -47,89 +47,34 @@ start_time = time.time()
 nlp = spacy.load(l_model) # this is the large sized model that also supports word vectors (for some reason loads faster than medium size model)
 print("Done. Loading took {} seconds".format((time.time()-start_time)))
 
-# some testing stuff
-#pprint(vars(nlp))
-
-'''
-# extract features from sentences (try different methods)
-def feature_word_vector(sentence,token_counter):
-	# given a sentence, extracts word vectors
-	sentence = nlp(sentence)
-	features = []
-	#features = pd.DataFrame()
-	for w in sentence:
-		if(not w.is_stop and not w.pos_ == "PUNCT"):
-			features.append(w.vector)
-			token_counter.increment()
-			#features = features.append(pd.Series(w.vector),ignore_index=True)
-	return features
-
-def extract_features(row):
-	features = feature_word_vector(row['sentence'])
-	return features
-'''
 
 vectors = []
 raw_sentences = df['sentence'].tolist()
 labels = df['label'].tolist()
 processed_sentences = []
-max_len = 0
+max_len = 100
+
+num_over_limit = 0
 
 print("Processing sentences using spaCy")
-for s in range(len(raw_sentences)): # len(raw_sentences) goes here normally
+for s in tqdm(range(len(raw_sentences))): # len(raw_sentences) goes here normally
 	processed = nlp(raw_sentences[s])
 	processed_sentences.append(processed)
 	temp_vectors = []
-	temp_max = 0
+	#temp_max = 0
 	for word in processed:
 		if(not word.pos_ in ['PUNCT','SYM','X']): # not word.is_stop and 
 			temp_vectors.append(word.lex_id)
-			temp_max += 1
+			#temp_max += 1
+	if(len(temp_vectors) > max_len):
+		temp_vectors = temp_vectors[:max_len] # if sequence is longer, simply truncate it (should not be needed, but ok)
+		num_over_limit += 1
 	vectors.append(temp_vectors)
-	if(temp_max > max_len):
-		max_len = temp_max
+	#if(temp_max > max_len):
+	#	max_len = temp_max
 
+print("Number of sentences found to be over max length of {} is {}".format(max_len,num_over_limit))
 
-# more testing stuff
-#print(type(processed_sentences[1][3]))
-#print(processed_sentences[1][3])
-#print(processed_sentences[1][1].vector)
-#pprint(dir(processed_sentences[1][3]))
-#print("Lexical ID ",processed_sentences[1][3].lex_id)
-#print("Rank ",processed_sentences[1][3].rank)
-#print("Vector of the document {}".format(processed_sentences[1]._vector))
-#print(type(nlp.vocab.vectors))
-#pprint(dir(nlp.vocab.vectors))
-#print(nlp.vocab.vectors.shape)
-#print(len(nlp.vocab.vectors.data))
-#print(nlp.vocab.vectors.data[0])
-#print(nlp.vocab.vectors.data[1])
-#print("Sample key ID: {} ".format(list(nlp.vocab.vectors.key2row)[0]))
-#print("Test   key ID: {} ".format(hash(processed_sentences[1][3])))
-#print("Another keyID: {} ".format(processed_sentences[1][3].orth))
-#print("Attempting a match to row: {}".format(nlp.vocab.vectors.key2row[processed_sentences[1][3].orth]))
-
-# test matching
-'''
-for i in range(len(processed_sentences[1])):
-	orth = processed_sentences[1][i].orth
-	rank = processed_sentences[1][i].rank
-	lex_id = processed_sentences[1][i].lex_id
-	word = processed_sentences[1][i].text
-	p = processed_sentences[1][i]
-	print("Word:	{}".format(word))
-	print("Rank:	{}".format(rank))
-	print("Lex ID:	{}".format(lex_id))
-	print("Match:	{}".format(nlp.vocab.vectors.key2row[orth]))
-	if(p.vector.all() == nlp.vocab.vectors.data[rank].all()):
-		print("Eureka!")
-	else:
-		print("No Luck...")
-	print("")
-
-print("Premature ending for testing purposes")
-exit()
-'''
 
 ### model
 # Imports (not sure how wise it is to do those here instead of at the top)
@@ -148,10 +93,11 @@ print("Maximum sequence length = {}".format(max_len))
 
 # last bit of pre-processing
 print("Padding vectors")
-padded_vectors = pad_sequences(vectors,maxlen=max_len,padding='post')
+padded_vectors = pad_sequences(vectors,maxlen=max_len,padding='pre')
 print("Splitting data")
 labels = to_categorical(labels)
-X_train, X_test, Y_train, Y_test = train_test_split(padded_vectors,labels,test_size=0.2,random_state=42)
+X_train, X_test, Y_train, Y_test = train_test_split(padded_vectors,labels,test_size=0.2,random_state=42) # try a split that may not overfit?
+print("Size of training data: {}".format(len(X_train)))
 
 # initialize model
 print("Initializing Keras Model")
@@ -165,7 +111,7 @@ print(model.summary())
 # train the model
 print("Training model")
 model_timing = time.time()
-model.fit(X_train, Y_train, batch_size =batch_size, epochs = 100,  verbose = 2)
+model.fit(X_train, Y_train, batch_size =batch_size, epochs = 30,  verbose = 2)
 print("Model Trained. Time elapsed: {}".format(time.time()-model_timing))
 
 # score model
@@ -174,12 +120,14 @@ print('Test accuracy: {}\nModel Score: {}'.format(acc,score))
 
 # Save model to disk
 def save_model(model):
-	model_save = 'klemen_model_full.json'
+	model_save = 'model_best'
 	print("Converting model to json")
 	model_json = model.to_json()
 	print("Saving model to {}".format(model_save))
-	with open(model_save,'w+') as json_file:
+	with open(model_save+'.json','w+') as json_file:
 		json_file.write(model_json)
+	print("Saving model weights")
+	model.save_weights(model_save+'.weights')
 
 save_model(model)
 
